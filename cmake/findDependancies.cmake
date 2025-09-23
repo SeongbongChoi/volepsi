@@ -117,5 +117,19 @@ endif()
 
 FIND_LIBOTE(REQUIRED)
 
+#######################################
+# relic
+
+if(VOLE_PSI_ENABLE_RELIC)
+    set(RELIC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/out/install/linux/include/relic")
+    set(RELIC_LIBRARIES "${CMAKE_SOURCE_DIR}/out/install/linux/lib/librelic_s.a")
+
+    message(STATUS "Forcing relic include dir: ${RELIC_INCLUDE_DIR}")
+    message(STATUS "Forcing relic library: ${RELIC_LIBRARIES}")
+
+    include_directories(${RELIC_INCLUDE_DIR})
+    link_libraries(${RELIC_LIBRARIES})
+endif()
+
 # resort the previous prefix path
 set(CMAKE_PREFIX_PATH ${PUSHED_CMAKE_PREFIX_PATH})
