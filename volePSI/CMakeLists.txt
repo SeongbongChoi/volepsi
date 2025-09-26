@@ -37,7 +37,6 @@ target_include_directories(volePSI PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 )
 
-# 컴파일 옵션들
 if(APPLE)
     target_compile_options(volePSI PRIVATE
         "-std=c++${VOLE_PSI_STD_VER}"
