@@ -1,18 +1,15 @@
-
-
-#############################################
-#               Build volePSI_Tests            #
-#############################################
-
+# tests/CMakeLists.txt
 
 set(SRCS
-	"Paxos_Tests.cpp"
-	"RsOprf_Tests.cpp"
-	"RsPsi_Tests.cpp"
-	"UnitTests.cpp"
+    "Paxos_Tests.cpp"
+    "RsOprf_Tests.cpp"
+    "RsPsi_Tests.cpp"
+    "UnitTests.cpp"
     "FileBase_Tests.cpp"
-	)
-	
+    "LPsi_Tests.cpp"
+    "PaxosRelic_Tests.cpp"
+)
+
 if(VOLE_PSI_ENABLE_GMW)
     list(APPEND SRCS
         "GMW_Tests.cpp"

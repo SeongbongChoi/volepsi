@@ -621,8 +621,6 @@ namespace volePSI
 		}
 	};
 
-
-
 	// A Paxos vector type when the elements are each 
 	// an array of type T's with length mCols. mCols can 
 	// be set at runtime. This differs from PxVector in

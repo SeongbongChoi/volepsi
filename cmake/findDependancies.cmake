@@ -1,19 +1,19 @@
+# findDependancies.cmake
 include(${CMAKE_CURRENT_LIST_DIR}/preamble.cmake)
 
 message(STATUS "VOLEPSI_THIRDPARTY_DIR=${VOLEPSI_THIRDPARTY_DIR}")
 
-
 set(PUSHED_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
 set(CMAKE_PREFIX_PATH "${VOLEPSI_THIRDPARTY_DIR};${CMAKE_PREFIX_PATH}")
 
-
 #######################################
 # sparsehash
+#######################################
 
 macro(FIND_SPARSEHASH)
     set(ARGS ${ARGN})
 
-    #explicitly asked to fetch sparsehash
+    # explicitly asked to fetch sparsehash
     if(FETCH_SPARSEHASH)
         list(APPEND ARGS NO_DEFAULT_PATH PATHS ${VOLEPSI_THIRDPARTY_DIR})
     elseif(${NO_CMAKE_SYSTEM_PATH})
@@ -39,19 +39,21 @@ message("SPARSEHASH_INCLUDE_DIRS=${SPARSEHASH_INCLUDE_DIRS}")
 
 if(NOT TARGET sparsehash)
     add_library(sparsehash INTERFACE IMPORTED)
-    
     target_include_directories(sparsehash INTERFACE 
-                    $<BUILD_INTERFACE:${SPARSEHASH_INCLUDE_DIRS}>
-                    $<INSTALL_INTERFACE:>)
+        $<BUILD_INTERFACE:${SPARSEHASH_INCLUDE_DIRS}>
+        $<INSTALL_INTERFACE:>)
 endif()
+
+
 
 #######################################
 # libOTe
+#######################################
 
 macro(FIND_LIBOTE)
     set(ARGS ${ARGN})
 
-    #explicitly asked to fetch libOTe
+    # explicitly asked to fetch libOTe
     if(FETCH_LIBOTE)
         list(APPEND ARGS NO_DEFAULT_PATH PATHS ${VOLEPSI_THIRDPARTY_DIR})
     elseif(${VOLE_PSI_NO_SYSTEM_PATH})
@@ -101,12 +103,12 @@ macro(FIND_LIBOTE)
         set(libOTe_options ${libOTe_options} relic)
     endif()
     message("\n\n\nlibOTe_options=${libOTe_options}")
-    find_package(libOTe ${ARGS} COMPONENTS  ${libOTe_options})
+    find_package(libOTe ${ARGS} COMPONENTS ${libOTe_options})
 
     if(TARGET oc::libOTe)
         set(libOTe_FOUND ON)
     else()
-        set(libOTe_FOUND  OFF)
+        set(libOTe_FOUND OFF)
     endif()
 endmacro()
 
@@ -119,17 +121,50 @@ FIND_LIBOTE(REQUIRED)
 
 #######################################
 # relic
+#######################################
 
-if(VOLE_PSI_ENABLE_RELIC)
-    set(RELIC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/out/install/linux/include/relic")
-    set(RELIC_LIBRARIES "${CMAKE_SOURCE_DIR}/out/install/linux/lib/librelic_s.a")
+# RELIC 설치 확인 (라이브러리와 헤더 모두 확인)
+set(RELIC_LIB_PATH "${VOLEPSI_THIRDPARTY_DIR}/lib/librelic_s.a")
+set(RELIC_HEADER_PATH "${VOLEPSI_THIRDPARTY_DIR}/include/relic/relic.h")
 
-    message(STATUS "Forcing relic include dir: ${RELIC_INCLUDE_DIR}")
-    message(STATUS "Forcing relic library: ${RELIC_LIBRARIES}")
-
-    include_directories(${RELIC_INCLUDE_DIR})
-    link_libraries(${RELIC_LIBRARIES})
+if(NOT EXISTS ${RELIC_LIB_PATH} OR NOT EXISTS ${RELIC_HEADER_PATH})
+    message(STATUS "Building RELIC for BLS12-381...")
+    
+    # Makefile로 RELIC 빌드
+    execute_process(
+        COMMAND make -f ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build_relic.mk
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE relic_result
+        OUTPUT_VARIABLE relic_output
+        ERROR_VARIABLE relic_error
+        COMMAND_ECHO STDOUT
+    )
+    
+    if(NOT relic_result EQUAL 0)
+        message(FATAL_ERROR "RELIC build failed with code ${relic_result}:\n${relic_error}")
+    endif()
+    
+    # 빌드 후 재확인
+    if(NOT EXISTS ${RELIC_LIB_PATH} OR NOT EXISTS ${RELIC_HEADER_PATH})
+        message(FATAL_ERROR "RELIC build completed but files not found:\n  Lib: ${RELIC_LIB_PATH}\n  Header: ${RELIC_HEADER_PATH}")
+    endif()
+    
+    message(STATUS "RELIC build completed successfully")
+else()
+    message(STATUS "RELIC already installed")
 endif()
 
-# resort the previous prefix path
+# RELIC 타겟 생성
+if(NOT TARGET relic)
+    add_library(relic STATIC IMPORTED)
+    set_target_properties(relic PROPERTIES
+        IMPORTED_LOCATION ${RELIC_LIB_PATH}
+    )
+    # relic.h를 직접 include할 수 있도록 relic 디렉토리를 include 경로로 설정
+    target_include_directories(relic SYSTEM INTERFACE ${VOLEPSI_THIRDPARTY_DIR}/include/relic)
+    
+    message(STATUS "RELIC target configured: ${RELIC_LIB_PATH}")
+endif()
+
+# restore the previous prefix path
 set(CMAKE_PREFIX_PATH ${PUSHED_CMAKE_PREFIX_PATH})

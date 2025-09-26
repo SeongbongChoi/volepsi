@@ -33,7 +33,8 @@ namespace volePSI
 		enum DenseType
 		{
 			Binary,
-			GF128
+			GF128,
+			G1
 		};
 
 		u64 mSparseSize = 0,

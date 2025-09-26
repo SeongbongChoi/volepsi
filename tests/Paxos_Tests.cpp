@@ -5,6 +5,7 @@
 #include <cmath>
 #include <unordered_set>
 #include <random>
+
 using namespace volePSI;
 
 auto& ZeroBlock = oc::ZeroBlock;
