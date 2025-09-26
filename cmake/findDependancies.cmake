@@ -123,14 +123,12 @@ FIND_LIBOTE(REQUIRED)
 # relic
 #######################################
 
-# RELIC 설치 확인 (라이브러리와 헤더 모두 확인)
 set(RELIC_LIB_PATH "${VOLEPSI_THIRDPARTY_DIR}/lib/librelic_s.a")
 set(RELIC_HEADER_PATH "${VOLEPSI_THIRDPARTY_DIR}/include/relic/relic.h")
 
 if(NOT EXISTS ${RELIC_LIB_PATH} OR NOT EXISTS ${RELIC_HEADER_PATH})
     message(STATUS "Building RELIC for BLS12-381...")
     
-    # Makefile로 RELIC 빌드
     execute_process(
         COMMAND make -f ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build_relic.mk
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -144,7 +142,6 @@ if(NOT EXISTS ${RELIC_LIB_PATH} OR NOT EXISTS ${RELIC_HEADER_PATH})
         message(FATAL_ERROR "RELIC build failed with code ${relic_result}:\n${relic_error}")
     endif()
     
-    # 빌드 후 재확인
     if(NOT EXISTS ${RELIC_LIB_PATH} OR NOT EXISTS ${RELIC_HEADER_PATH})
         message(FATAL_ERROR "RELIC build completed but files not found:\n  Lib: ${RELIC_LIB_PATH}\n  Header: ${RELIC_HEADER_PATH}")
     endif()
@@ -154,13 +151,12 @@ else()
     message(STATUS "RELIC already installed")
 endif()
 
-# RELIC 타겟 생성
 if(NOT TARGET relic)
     add_library(relic STATIC IMPORTED)
     set_target_properties(relic PROPERTIES
         IMPORTED_LOCATION ${RELIC_LIB_PATH}
     )
-    # relic.h를 직접 include할 수 있도록 relic 디렉토리를 include 경로로 설정
+    
     target_include_directories(relic SYSTEM INTERFACE ${VOLEPSI_THIRDPARTY_DIR}/include/relic)
     
     message(STATUS "RELIC target configured: ${RELIC_LIB_PATH}")
